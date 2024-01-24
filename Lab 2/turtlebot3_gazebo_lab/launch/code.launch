@@ -1,0 +1,8 @@
+<launch>
+  
+  <node name="lab_node"  pkg="turtlebot3_gazebo_lab" type="controller_lab3_cw.py" output="screen"/>
+  <node name="odo_rec"   pkg="turtlebot3_gazebo_lab" type="record_path.py" output="screen"/>
+  <node name="speed_rec" pkg="turtlebot3_gazebo_lab" type="record.py" output="screen"/>
+
+</launch> 
+
