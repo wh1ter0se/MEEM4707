@@ -27,20 +27,24 @@ class recorder:
 
 
 		linear_speed = 0.1
-		angular_kP = 0.2
+		angular_kP = 0.045
 		angular_tolerance = 5 # degrees
 
-		follow_distance = 0.2 # m
+		follow_distance = 0.5  # m
 		follow_distance_tolerance = 0.05 # m
 		heading = 0
 		distance = 0
 
-		state = EState['ALIGNING']
+		init_buffer = 10
+		count = 0
+
 		class EState(Enum):
-			POSITIONING = 1
-			ALIGNING = 2
-			FOLLOWING = 3
-			COMPLETE = 4
+			LOCATING = 1
+			POSITIONING = 2
+			ALIGNING = 3
+			FOLLOWING = 4
+			COMPLETE = 5
+		state = EState['LOCATING']
 
 		while not rospy.is_shutdown():
 			rospy.Subscriber('/scan',LaserScan,rec.scan_callback)
@@ -60,27 +64,46 @@ class recorder:
 			d = min(scn_arr)
 			ind = scn_arr.index(min(scn_arr))	# This is index of minimum distance value in scn_arr
 			ang = ind*res			# This is angle of minimum distance value in scn_arr
-			print(d, ang)
+			#print(d, ang)
 
-			if state == EState['POSITIONING']:
-				w_cmd = ang*angular_kP # P-controller on angle
-				v_cmd = linear_speed
-				if d < follow_distance:
-					v_cmd = 0
-					w_cmd = 0
-					state = EState['ALIGNING']
-
-			elif state == EState['ALIGNING']:
-				w_cmd = (ang-90)*angular_kP # P-controller on angle
+			if count < init_buffer: # ignore bad initial lidar data
+				w_cmd = 0
 				v_cmd = 0
-				if (ang-90) < angular_tolerance:
-					state = EState['ALIGNING']
+				count += 1
+			else:
+				if state == EState['LOCATING']:
+					print('[1] LOCATING (ang error = ' + str(ang) + ')')
+					w_cmd = math.radians(90/5)
+					v_cmd = 0
+					if (abs(ang) <= angular_tolerance) or (abs(360-ang) <= angular_tolerance):
+						w_cmd = 0
+						v_cmd = 0
+						state = EState['POSITIONING']
 
-			elif state == EState['FOLLOWING']:
-				if abs(d-follow_distance) > follow_distance_tolerance:
-					ang += (d-follow_distance)*angular_kP
-				w_cmd = (ang)*angular_kP # P-controller on angle
-				v_cmd = follow_distance
+				elif state == EState['POSITIONING']:
+					print('[2] POSITIONING (dist error = ' + str(d) + ')')
+					#w_cmd = -ang*angular_kP # P-controller on angle
+					w_cmd = 0
+					v_cmd = linear_speed
+					if d <= follow_distance:
+						v_cmd = 0
+						w_cmd = 0
+						state = EState['ALIGNING']
+
+				elif state == EState['ALIGNING']:
+					print('[3] ALIGNING (ang error = ' + str(abs(90-ang)) + ')')
+					w_cmd = math.radians(-90/5)
+					v_cmd = 0
+					if abs(90-ang) <= angular_tolerance:
+						state = EState['FOLLOWING']
+
+				elif state == EState['FOLLOWING']:
+					angle_error = min([90-ang, (90) + (360-ang)])
+					print("[4] FOLLOWING (angle error = " + str(angle_error) + ", dist error = " + str(d) + ")")
+					#if abs(d-follow_distance) > follow_distance_tolerance:
+					#	ang += (d-follow_distance)*angular_kP
+					w_cmd = -angle_error*angular_kP # P-controller on angle
+					v_cmd = linear_speed
 
 				
 
