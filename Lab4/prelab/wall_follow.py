@@ -9,6 +9,7 @@ from std_msgs.msg import Float64MultiArray
 from sensor_msgs.msg import LaserScan
 from std_msgs.msg import Float32
 import csv
+from enum import Enum
 
 class recorder:
 
@@ -23,6 +24,23 @@ class recorder:
 		rospy.init_node('wall_follow')
 		rate = rospy.Rate(10)
 		scn_arr = recorder.scan_data
+
+
+		linear_speed = 0.1
+		angular_kP = 0.2
+		angular_tolerance = 5 # degrees
+
+		follow_distance = 0.2 # m
+		follow_distance_tolerance = 0.05 # m
+		heading = 0
+		distance = 0
+
+		state = EState['ALIGNING']
+		class EState(Enum):
+			POSITIONING = 1
+			ALIGNING = 2
+			FOLLOWING = 3
+			COMPLETE = 4
 
 		while not rospy.is_shutdown():
 			rospy.Subscriber('/scan',LaserScan,rec.scan_callback)
@@ -44,8 +62,35 @@ class recorder:
 			ang = ind*res			# This is angle of minimum distance value in scn_arr
 			print(d, ang)
 
-			v_cmd=0.2
-			w_cmd=0.5
+			if state == EState['POSITIONING']:
+				w_cmd = ang*angular_kP # P-controller on angle
+				v_cmd = linear_speed
+				if d < follow_distance:
+					v_cmd = 0
+					w_cmd = 0
+					state = EState['ALIGNING']
+
+			elif state == EState['ALIGNING']:
+				w_cmd = (ang-90)*angular_kP # P-controller on angle
+				v_cmd = 0
+				if (ang-90) < angular_tolerance:
+					state = EState['ALIGNING']
+
+			elif state == EState['FOLLOWING']:
+				if abs(d-follow_distance) > follow_distance_tolerance:
+					ang += (d-follow_distance)*angular_kP
+				w_cmd = (ang)*angular_kP # P-controller on angle
+				v_cmd = follow_distance
+
+				
+
+
+
+
+			# v_cmd=0.2
+			# w_cmd=0.5
+
+			# 
 
 
 			#########################################################################
