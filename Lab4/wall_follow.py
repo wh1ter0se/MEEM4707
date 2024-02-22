@@ -31,9 +31,6 @@ class recorder:
 		angular_tolerance = 5 # degrees
 
 		follow_distance = 0.5  # m
-		follow_distance_tolerance = 0.05 # m
-		heading = 0
-		distance = 0
 
 		init_buffer = 10
 		count = 0
@@ -82,7 +79,6 @@ class recorder:
 
 				elif state == EState['POSITIONING']:
 					print('[2] POSITIONING (dist error = ' + str(d) + ')')
-					#w_cmd = -ang*angular_kP # P-controller on angle
 					w_cmd = 0
 					v_cmd = linear_speed
 					if d <= follow_distance:
@@ -104,17 +100,6 @@ class recorder:
 					#	ang += (d-follow_distance)*angular_kP
 					w_cmd = -angle_error*angular_kP # P-controller on angle
 					v_cmd = linear_speed
-
-				
-
-
-
-
-			# v_cmd=0.2
-			# w_cmd=0.5
-
-			# 
-
 
 			#########################################################################
 			vel_msg=Twist()
