@@ -117,7 +117,7 @@ class recorder:
                 count += 1
 
             elif state == EState["SCANNING"]:
-                print(f"[1] SCANNING (ang error = {C_omega})")
+                print("[1] SCANNING (ang error = " + str(C_omega) + ")")
 
                 w_cmd = math.radians(90 / 5)
                 v_cmd = 0
@@ -127,7 +127,7 @@ class recorder:
                     state = EState["APPROACH"]
 
             elif state == EState["APPROACH"]:
-                print(f"[2] APPROACH (dist error = {d})")
+                print("[2] APPROACH (dist error = " + str(d) + ")")
                 w_cmd = 0
                 v_cmd = linear_speed
                 if d <= follow_distance:
@@ -136,7 +136,7 @@ class recorder:
                     state = EState["ALIGNING"]
 
             elif state == EState["ALIGNING"]:
-                print(f"[3] ALIGNING (ang error = {abs(90-C_omega)})")
+                print("[3] ALIGNING (ang error = " + str(abs(90 - C_omega)) + ")")
                 w_cmd = math.radians(-90 / 5)
                 v_cmd = 0
                 if abs(90 - C_omega) <= angular_tolerance:
@@ -144,7 +144,13 @@ class recorder:
 
             elif state == EState["FOLLOWING"]:
                 angle_error = min([90 - C_omega, (90) + (360 - C_omega)])
-                print(f"[4] FOLLOWING (angle error = {angle_error}, dist error = {d})")
+                print(
+                    "[4] FOLLOWING (angle error = "
+                    + str(angle_error)
+                    + ", dist error = "
+                    + str(d)
+                    + ")"
+                )
                 w_cmd = -angle_error * angular_kP  # P-controller on angle
                 v_cmd = linear_speed
 
