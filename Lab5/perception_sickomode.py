@@ -31,10 +31,10 @@ class recorder:
         r = 3
 
         # added variables
-        linear_speed = 0.05
-        angular_kP = 0.05
+        linear_speed = 0.08
+        angular_kP = 0.035
         angular_tolerance = 5  # degrees
-        follow_distance = 0.3  # m
+        follow_distance = 0.35  # m
 
         init_buffer = 10
         count = 0
@@ -115,20 +115,20 @@ class recorder:
                 np.argmax(mat, axis=None), mat.shape
             )  # index of highest vote in HT matrix
 
-            C_x = (len(a) / 2 - C[0]) * res
-            C_y = (len(a) / 2 - C[1]) * res
+            C_x = (len(a) / 2 - C[0]) * resm
+            C_y = (len(a) / 2 - C[1]) * resm
 
             # C_x = (arr_sizem / 2) - (resm * C[1])
             # C_y = (resm * C[0]) - (arr_sizem / 2)
 
             C_omega = (
-                (math.degrees(math.atan2(C_y, C_x)) + 270.0) % 360.0
+                math.degrees(math.atan2(C_y, C_x))
                 if (C_y is not None and C_x is not None) or (C_y != 0 or C_x != 0)
                 else None
             )
             # C_omega = (C_omega + 360) % 360
             # C_dist = math.sqrt(C_x**2 + C_y**2)
-            print(arr_size - C[1], C[0], round(C_omega, 2))
+            #print(C_x, C_y, round(C_omega, 2))
             # print(C[0], C[1])
             # print(a[0],b[0],mat[0])
 
@@ -161,7 +161,7 @@ class recorder:
                     + str(round(d, 2))
                     + " m)"
                 )
-                w_cmd = -C_omega * angular_kP
+                w_cmd = C_omega * angular_kP
                 v_cmd = linear_speed
                 if d <= follow_distance:
                     v_cmd = 0
@@ -169,7 +169,7 @@ class recorder:
                     state = EState["ALIGNING"]
 
             elif state == EState["ALIGNING"]:
-                angle_error = 90 - C_omega
+                angle_error = ang - 90 #C_omega - 90
                 print("[3] ALIGNING (ang error = " + str(round(angle_error, 2)) + " deg)")
                 w_cmd = math.radians(-90 / 5)
                 v_cmd = 0
@@ -177,7 +177,7 @@ class recorder:
                     state = EState["FOLLOWING"]
 
             elif state == EState["FOLLOWING"]:
-                angle_error = 90 - C_omega
+                angle_error = ang - 85 #C_omega - 90
                 print(
                     "[4]] FOLLOWING (ang error = "
                     + str(round(angle_error, 2))
