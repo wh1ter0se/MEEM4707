@@ -66,7 +66,7 @@ class recorder:
             ####################@TODO write your code below##########################
 
             arr_size = 400
-            arr_sizem = 1
+            arr_sizem = 2
             resm = float(arr_sizem) / arr_size
 
             # a = [
@@ -77,10 +77,10 @@ class recorder:
             # ]  # @TODO# example decide range of 'b'= [1 to -1) / SET your own range
 
             a = [
-                -(arr_sizem / 2) + resm * i for i in range(arr_size)
+                (arr_sizem / 2) - resm * i for i in range(arr_size)
             ]  # @TODO# example decide range of 'a'= [1 to 2) / SET your own range
             b = [
-                -(arr_sizem / 2) + resm * i for i in range(arr_size)
+                (arr_sizem / 2) - resm * i for i in range(arr_size)
             ]  # @TODO# example decide range of 'b'= [1 to -1) / SET your own range
             mat = np.zeros([len(a), len(b)])  # The HT vote matrix
 
@@ -115,8 +115,12 @@ class recorder:
                 np.argmax(mat, axis=None), mat.shape
             )  # index of highest vote in HT matrix
 
-            C_x = (arr_sizem / 2) - (resm * C[1])
-            C_y = (resm * C[0]) - (arr_sizem / 2)
+            C_x = (len(a) / 2 - C[0]) * res
+            C_y = (len(a) / 2 - C[1]) * res
+
+            # C_x = (arr_sizem / 2) - (resm * C[1])
+            # C_y = (resm * C[0]) - (arr_sizem / 2)
+
             C_omega = (
                 (math.degrees(math.atan2(C_y, C_x)) + 270.0) % 360.0
                 if (C_y is not None and C_x is not None) or (C_y != 0 or C_x != 0)
