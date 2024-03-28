@@ -6,8 +6,9 @@ import matplotlib.pyplot as plt
 # Parameters
 Zeta = 10.0  # attractive potential gain
 Eta = 100.0  # repulsive potential gain
-q_star = 2  # additional distance from the obstacles
+q_star = 0.5  # additional distance from the obstacles
 show_animation = True
+POS_PER_GRID = 4
 OSCILLATIONS_DETECTION_LENGTH = 3
 
 
@@ -45,10 +46,10 @@ def oscillations_detection(previous_ids, ix, iy):
 def draw_env(ox, oy, rr, xw, yw):
     plt.axis("equal")
     ax = plt.gca()
-    ax.set_xlim((0, xw))
-    ax.set_ylim((0, yw))
+    ax.set_xlim((-1, xw))
+    ax.set_ylim((-1, yw))
     for j in range(len(ox)):
-        circle = plt.Circle((ox[j], oy[j]), rr[j])
+        circle = plt.Circle((ox[j] / POS_PER_GRID, oy[j] / POS_PER_GRID), rr[j] / POS_PER_GRID)
         ax.add_patch(circle)
 
 
@@ -89,6 +90,17 @@ def cal_potential_field(gx, gy, ox, oy, rr, sx, sy, xw, yw):
 
 
 def potential_field_planning(sx, sy, gx, gy, ox, oy, rr, xw, yw):
+    sx *= POS_PER_GRID
+    sy *= POS_PER_GRID
+    gx *= POS_PER_GRID
+    gy *= POS_PER_GRID
+    xw *= POS_PER_GRID
+    yw *= POS_PER_GRID
+
+    ox = [_ * POS_PER_GRID for _ in ox]
+    oy = [_ * POS_PER_GRID for _ in oy]
+    rr = [_ * POS_PER_GRID for _ in rr]
+
     # calculate potential field
     pmap = cal_potential_field(gx, gy, ox, oy, rr, sx, sy, xw, yw)
     d = np.hypot(sx - gx, sy - gy)
@@ -99,12 +111,12 @@ def potential_field_planning(sx, sy, gx, gy, ox, oy, rr, xw, yw):
     if show_animation:
         draw_env(ox, oy, rr, xw, yw)
         plt.axis("square")
-        plt.gca().set_xlim((0, xw))
-        plt.gca().set_ylim((0, yw))
-        plt.plot(ix, iy, "*k")
-        plt.plot(gx, gy, "*m")
-        plt.plot(ix, iy, ".r")
-        print(ix, iy)
+        plt.gca().set_xlim((-1, xw / POS_PER_GRID))
+        plt.gca().set_ylim((-1, yw / POS_PER_GRID))
+        plt.plot(ix / POS_PER_GRID, iy / POS_PER_GRID, "*k")
+        plt.plot(gx / POS_PER_GRID, gy / POS_PER_GRID, "*m")
+        plt.plot(ix / POS_PER_GRID, iy / POS_PER_GRID, ".r")
+        print(ix / POS_PER_GRID, iy / POS_PER_GRID)
         plt.pause(0.01)
 
     while d >= 1:
@@ -134,12 +146,12 @@ def potential_field_planning(sx, sy, gx, gy, ox, oy, rr, xw, yw):
         if show_animation:
             draw_env(ox, oy, rr, xw, yw)
             plt.axis("square")
-            plt.gca().set_xlim((0, xw))
-            plt.gca().set_ylim((0, yw))
-            plt.plot(ix, iy, "*k")
-            plt.plot(gx, gy, "*m")
-            plt.plot(ix, iy, ".r")
-            print(ix, iy)
+            plt.gca().set_xlim((-1, xw / POS_PER_GRID))
+            plt.gca().set_ylim((-1, yw / POS_PER_GRID))
+            plt.plot(ix / POS_PER_GRID, iy / POS_PER_GRID, "*k")
+            plt.plot(gx / POS_PER_GRID, gy / POS_PER_GRID, "*m")
+            plt.plot(ix / POS_PER_GRID, iy / POS_PER_GRID, ".r")
+            print(ix / POS_PER_GRID, iy / POS_PER_GRID)
             plt.pause(0.01)
 
     print("Goal!!")
@@ -148,25 +160,15 @@ def potential_field_planning(sx, sy, gx, gy, ox, oy, rr, xw, yw):
 
 def main():
     print("potential_field_planning start")
-    sx = 5.0  # start x position
-    sy = 5.0  # start y positon
-    gx = 35.0  # goal x position
-    gy = 35.0  # goal y position
-    obs_radius = [5, 4, 5, 3]  # osbtacle radius
-    ox = [
-        5.0,
-        10.0,
-        20.0,
-        30.0,
-    ]  # obstacle x center position list
-    oy = [
-        15.0,
-        25.0,
-        26.0,
-        22.0,
-    ]  # obstacle y center position list
-    xw = 40  # x limit
-    yw = 40  # y limit
+    sx = 0.0  # start x position
+    sy = 0.0  # start y positon
+    gx = 2.0  # goal x position
+    gy = 2.0  # goal y position
+    obs_radius = [0.25]  # osbtacle radius
+    ox = [1.28]  # obstacle x center position list
+    oy = [1.33]  # obstacle y center position list
+    xw = 4  # x limit
+    yw = 4  # y limit
     # path generation
     ix, iy = potential_field_planning(sx, sy, gx, gy, ox, oy, obs_radius, xw, yw)
 
